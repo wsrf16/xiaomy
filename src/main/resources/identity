@@ -1,0 +1,31 @@
+http://u8xy4y2s.dongtaiyuming.net/
+
+{
+	"code": 0,
+	"msg": "成功",
+	"data": {
+		"id": 62008,
+		"time_price_id": null,
+		"server_port": 11420,
+		"client_port": 8080,
+		"name": "本机",
+		"create_time": 1636167301000,
+		"type": 0,
+		"domain": "u8xy4y2s",
+		"server_id": null,
+		"state": 0,
+		"start_time": null,
+		"stop_time": 1636772101000,
+		"user_id": 56362,
+		"client_host": "127.0.0.1",
+		"bandwidth": 3,
+		"server_ip": "101.200.86.207",
+		"port_token": "z8le30z7",
+		"tunnel_token": null,
+		"auto_conn": 5,
+		"stop_time_1": "2021-11-13 10:55:01",
+		"flag": 1,
+		"status": 0,
+		"tunnelGrade": 3
+	}
+}
