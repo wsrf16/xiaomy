@@ -1,11 +1,12 @@
 package com.frp.xiaomy.utility;
 
-import com.alibaba.fastjson.JSONObject;
+import com.aio.portable.swiss.suite.bean.serializer.json.JacksonSugar;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.HashMap;
 
 
 public class Packet
@@ -15,14 +16,14 @@ public class Packet
     private int BodyLength;
     private byte[] Head;
     private byte[] Body;
-    private JSONObject HeadObject;
+    private HashMap HeadObject;
 
-    public Packet(JSONObject headObject, byte[] Body) {
+    public Packet(HashMap headObject, byte[] Body) {
         Body = (Body == null) ? "Null Body".getBytes() : Body;
 
         this.HeadObject = headObject;
         this.Head = headObject.toString().getBytes();
-        this.HeadLength = (headObject.toJSONString().getBytes()).length;
+        this.HeadLength = (JacksonSugar.obj2Json(headObject).getBytes()).length;
 
         this.Body = Body;
         this.BodyLength = Body.length;
@@ -103,7 +104,7 @@ public class Packet
 
 
         try {
-            this.HeadObject = JSONObject.parseObject(new String(this.Head));
+            this.HeadObject = JacksonSugar.json2T(new String(this.Head));
         }
         catch (Exception e) {
             System.out.println("(错误)");
@@ -181,9 +182,9 @@ public class Packet
 
 
 
-    public JSONObject getHeadObject() { return this.HeadObject; }
+    public HashMap getHeadObject() { return this.HeadObject; }
 
 
 
-    public void setHeadObject(JSONObject headObject) { this.HeadObject = headObject; }
+    public void setHeadObject(HashMap headObject) { this.HeadObject = headObject; }
 }

@@ -1,7 +1,6 @@
 package com.frp.xiaomy;
 
 import com.aio.portable.swiss.design.singleton.SingletonProvider;
-import com.alibaba.fastjson.JSONObject;
 import com.frp.xiaomy.common.Config;
 import com.frp.xiaomy.utility.Packet;
 import com.frp.xiaomy.utility.ReadWriteRunnable;
@@ -10,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class TcpTunnel extends Thread {
@@ -42,7 +42,7 @@ public class TcpTunnel extends Thread {
         }
 
 
-        JSONObject jsonObject = new JSONObject();
+        HashMap jsonObject = new HashMap();
         jsonObject.put("userid", config.getUserId());
         jsonObject.put("token", config.getToken());
         jsonObject.put("id", config.getTunnelId());
@@ -83,7 +83,7 @@ public class TcpTunnel extends Thread {
                 TcpTunnel.this.time = Long.valueOf(System.currentTimeMillis());
                 while (TcpTunnel.this.heatFlag) {
                     try {
-                        JSONObject jsonObject = new JSONObject();
+                        HashMap jsonObject = new HashMap<>();
                         jsonObject.put("type", "HEART");
                         Packet packet = new Packet(jsonObject, "heart".getBytes());
                         if (!packet.Send(TcpTunnel.this.server_socket)) {
@@ -108,8 +108,8 @@ public class TcpTunnel extends Thread {
                 try {
                     while (TcpTunnel.this.flag && !TcpTunnel.this.server_socket.isClosed()) {
                         Packet packet = new Packet(TcpTunnel.this.inputStream);
-                        if (packet.getHeadObject().getString("type").equals("LOGIN")) {
-                            if (packet.getHeadObject().getString("msg").equals("LOGINOK")) {
+                        if (packet.getHeadObject().get("type").equals("LOGIN")) {
+                            if (packet.getHeadObject().get("msg").equals("LOGINOK")) {
                                 if (config.getIsFirst() == 0) {
                                     config.setIsFirst(1);
                                 }
@@ -120,7 +120,7 @@ public class TcpTunnel extends Thread {
                                 break;
                             }
                         }
-                        if (packet.getHeadObject().getString("type").equals("CONN")) {
+                        if (packet.getHeadObject().get("type").equals("CONN")) {
                             Socket cs = null;
                             Socket ss = null;
                             try {
@@ -130,19 +130,19 @@ public class TcpTunnel extends Thread {
                                 continue;
                             }
                             ss = new Socket(config.getServerIp(), 8888);
-                            JSONObject jsonObject = new JSONObject();
+                            HashMap jsonObject = new HashMap();
                             jsonObject.put("type", "CONN");
-                            jsonObject.put("uid", packet.getHeadObject().getString("uid"));
+                            jsonObject.put("uid", packet.getHeadObject().get("uid"));
                             Packet packet1 = new Packet(jsonObject, "null".getBytes());
                             packet1.Send(ss);
                             TcpTunnel.this.cachedThreadPool.execute(new ReadWriteRunnable(cs, ss));
                             TcpTunnel.this.cachedThreadPool.execute(new ReadWriteRunnable(ss, cs));
                         }
-                        if (packet.getHeadObject().getString("type").equals("HEART")) {
+                        if (packet.getHeadObject().get("type").equals("HEART")) {
                             TcpTunnel.this.time = Long.valueOf(System.currentTimeMillis());
                         }
-                        if (packet.getHeadObject().getString("type").equals("MSG") &&
-                                packet.getHeadObject().getString("msg").equals("STOP")) {
+                        if (packet.getHeadObject().get("type").equals("MSG") &&
+                                packet.getHeadObject().get("msg").equals("STOP")) {
                             System.exit(0);
                         }
                     }
@@ -153,3 +153,13 @@ public class TcpTunnel extends Thread {
         return runnable;
     }
 }
+
+
+//class Re {
+//    private Integer userid;
+//    private String token;
+//    private Integer id;
+//    private String version;
+//    private String type;
+//    private String ChangeToken;
+//}
