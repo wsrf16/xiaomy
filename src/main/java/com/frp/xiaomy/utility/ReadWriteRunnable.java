@@ -8,7 +8,7 @@ import java.net.Socket;
 public class ReadWriteRunnable implements Runnable {
     private Socket readSocket;
     private Socket writeSocket;
-    private Boolean Flag = Boolean.valueOf(true);
+    private Boolean flag = Boolean.valueOf(true);
 
 
     public ReadWriteRunnable(Socket readSocket, Socket writeSocket) {
@@ -23,7 +23,7 @@ public class ReadWriteRunnable implements Runnable {
         try {
             is = this.readSocket.getInputStream();
             os = this.writeSocket.getOutputStream();
-            while (!this.readSocket.isClosed() && !this.writeSocket.isClosed() && this.Flag.booleanValue()) {
+            while (!this.readSocket.isClosed() && !this.writeSocket.isClosed() && this.flag.booleanValue()) {
                 int size = is.read(b);
                 if (size > 0) {
                     os.write(b, 0, size);
@@ -34,17 +34,17 @@ public class ReadWriteRunnable implements Runnable {
                     continue;
                 }
                 if (size == -1) {
-                    this.Flag = Boolean.valueOf(false);
+                    this.flag = Boolean.valueOf(false);
 
                     break;
                 }
             }
         } catch (Exception e) {
 
-            this.Flag = Boolean.valueOf(false);
+            this.flag = Boolean.valueOf(false);
         } finally {
 
-            this.Flag = Boolean.valueOf(false);
+            this.flag = Boolean.valueOf(false);
 
             try {
                 if (is != null) {

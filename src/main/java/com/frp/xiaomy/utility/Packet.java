@@ -1,38 +1,49 @@
 package com.frp.xiaomy.utility;
 
 import com.aio.portable.swiss.suite.bean.serializer.json.JacksonSugar;
+import com.aio.portable.swiss.suite.log.facade.LogHub;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 
 
-public class Packet
-{
-    private int Type;
-    private int HeadLength;
-    private int BodyLength;
-    private byte[] Head;
-    private byte[] Body;
-    private HashMap HeadObject;
+public class Packet {
+    LogHub log = AppLogHubFactory.staticBuild1();
 
-    public Packet(HashMap headObject, byte[] Body) {
-        Body = (Body == null) ? "Null Body".getBytes() : Body;
+    private byte[] headBytes;
+    private byte[] bodyBytes;
+    private HashMap head;
+    private String body;
 
-        this.HeadObject = headObject;
-        this.Head = headObject.toString().getBytes();
-        this.HeadLength = (JacksonSugar.obj2Json(headObject).getBytes()).length;
+    public Packet(HashMap head, String body) {
+        this.head = head;
+        this.body = body;
 
-        this.Body = Body;
-        this.BodyLength = Body.length;
+        this.headBytes = toByte(head);
+        this.bodyBytes = toByte(this.body);
+    }
+
+    private static byte[] toByte(HashMap head) {
+        return JacksonSugar.obj2Json(head).getBytes();
+    }
+
+    private static byte[] toByte(String body) {
+        return body.getBytes();
+    }
+
+    private final static <T> T toHead(byte[] bytes) {
+        return JacksonSugar.json2T(new String(bytes));
+    }
+
+    private final static String toBody(byte[] bytes) {
+        return new String(bytes);
     }
 
     public Packet(InputStream inputStream) throws Exception {
         byte[] bytesReadHeadLength = new byte[4];
         byte[] bytesReadBodyLength = new byte[4];
-
 
         int hl = 0, hlSize = 4;
         while (hl < hlSize) {
@@ -50,15 +61,12 @@ public class Packet
         }
 
 
-
         int bl = 0, blSize = 4;
-
         while (bl < blSize) {
             int aa = inputStream.read(bytesReadBodyLength, bl, blSize - bl);
             if (aa == -1) {
                 break;
             }
-
             if (aa == 0) {
                 Thread.sleep(10L);
             }
@@ -66,16 +74,14 @@ public class Packet
         }
 
 
-        this.Head = new byte[BaseUtility.byteToInt2(bytesReadHeadLength)];
-        this.Body = new byte[BaseUtility.byteToInt2(bytesReadBodyLength)];
-
+        this.headBytes = new byte[BaseUtility.byteToInt2(bytesReadHeadLength)];
+        this.bodyBytes = new byte[BaseUtility.byteToInt2(bytesReadBodyLength)];
 
 
         try {
             int h = 0, hSize = BaseUtility.byteToInt2(bytesReadHeadLength);
             while (h < hSize) {
-                int aa = inputStream.read(this.Head, h, hSize - h);
-
+                int aa = inputStream.read(this.headBytes, h, hSize - h);
                 if (aa == -1) {
                     break;
                 }
@@ -84,12 +90,11 @@ public class Packet
                 }
                 h += aa;
             }
+            this.head = toHead(this.headBytes);
 
             int b = 0, bSize = BaseUtility.byteToInt2(bytesReadBodyLength);
-
             while (b < bSize) {
-                int aa = inputStream.read(this.Body, b, bSize - b);
-
+                int aa = inputStream.read(this.bodyBytes, b, bSize - b);
                 if (aa == -1) {
                     break;
                 }
@@ -98,93 +103,32 @@ public class Packet
                 }
                 b += aa;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        try {
-            this.HeadObject = JacksonSugar.json2T(new String(this.Head));
-        }
-        catch (Exception e) {
-            System.out.println("(错误)");
-            throw e;
+//            this.body = toType(this.bodyBytes);
+        } catch (Exception e) {
+            log.e("发送错误", e);
+            System.out.println("发送错误");
+            throw new RuntimeException(e);
         }
     }
-
-
-
-
 
     public boolean Send(Socket socket) {
         try {
             OutputStream outputStream = socket.getOutputStream();
-
-
-            outputStream.write(BaseUtility.intToBytes2(this.HeadLength));
-
-            outputStream.write(BaseUtility.intToBytes2(this.BodyLength));
-
-            outputStream.write(this.Head);
-
-            outputStream.write(this.Body);
-
+            outputStream.write(BaseUtility.intToBytes2(this.headBytes.length));
+            outputStream.write(BaseUtility.intToBytes2(this.bodyBytes.length));
+            outputStream.write(this.headBytes);
+            outputStream.write(this.bodyBytes);
             outputStream.flush();
-
-
             return true;
         } catch (Exception e) {
+            log.e("发送错误", e);
+            System.out.println("发送错误");
             return false;
         }
     }
 
+    public HashMap getHead() {
+        return this.head;
+    }
 
-
-
-
-    public int getType() { return this.Type; }
-
-
-
-    public void setType(int type) { this.Type = type; }
-
-
-
-    public int getHeadLength() { return this.HeadLength; }
-
-
-
-    public void setHeadLength(int headLength) { this.HeadLength = headLength; }
-
-
-
-    public int getBodyLength() { return this.BodyLength; }
-
-
-
-    public void setBodyLength(int bodyLength) { this.BodyLength = bodyLength; }
-
-
-
-    public byte[] getHead() { return this.Head; }
-
-
-
-    public void setHead(byte[] head) { this.Head = head; }
-
-
-
-    public byte[] getBody() { return this.Body; }
-
-
-
-    public void setBody(byte[] body) { this.Body = body; }
-
-
-
-    public HashMap getHeadObject() { return this.HeadObject; }
-
-
-
-    public void setHeadObject(HashMap headObject) { this.HeadObject = headObject; }
 }

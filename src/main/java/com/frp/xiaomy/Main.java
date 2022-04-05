@@ -4,9 +4,12 @@ import com.aio.portable.swiss.design.singleton.SingletonProvider;
 import com.aio.portable.swiss.sugar.type.CollectionSugar;
 import com.aio.portable.swiss.suite.bean.BeanSugar;
 import com.aio.portable.swiss.suite.bean.serializer.json.JacksonSugar;
+import com.aio.portable.swiss.suite.log.facade.LogHub;
+import com.aio.portable.swiss.suite.log.solution.slf4j.Slf4JLogProperties;
 import com.frp.xiaomy.bean.DataDTO;
 import com.frp.xiaomy.bean.Result;
 import com.frp.xiaomy.common.Config;
+import com.frp.xiaomy.utility.AppLogHubFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -20,10 +23,14 @@ public class Main {
     static ThreadPoolExecutor cachedThreadPool = SingletonProvider.instance(new ThreadPoolExecutor(0, Integer.MAX_VALUE,
             60L, TimeUnit.SECONDS,
             new SynchronousQueue<Runnable>()));
+    private static LogHub log;
 
     public static void main(String[] args) {
+        Slf4JLogProperties.singletonInstance().setEnabled(false);
+        log = AppLogHubFactory.staticBuild1();
+
         String token = parseToken(args);
-//        token = "z8le30z7";
+//        String token = "yu826y4t";
 
         Config config = SingletonProvider.instance(Config.class);
         config.setToken(token);
